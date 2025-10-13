@@ -112,8 +112,8 @@ async function initBooksPage() {
       const div = document.createElement('div');
       div.className = 'book-item';
       const imageUrl = b.imagePath.startsWith('/uploads/')
-        ? `http://localhost:8080${b.imagePath}`
-        : `http://localhost:8080/uploads/${b.imagePath}`;
+        ? `https://booksite-backend-production.up.railway.app:8080${b.imagePath}`
+        : `https://booksite-backend-production.up.railway.app:8080/uploads/${b.imagePath}`;
 
       div.innerHTML = `
         <img data-src="${imageUrl}" alt="${b.title}" class="lazy">
