@@ -333,8 +333,8 @@ async function loadChatList() {
       div.dataset.title = book.title;
       
       const imageUrl = book.image.startsWith('/uploads/')
-        ? `https://booksite-backend-production.up.railway.app:8080${book.image}`
-        : `https://booksite-backend-production.up.railway.app:8080/uploads/${book.image}`;
+        ? `https://booksite-backend-production.up.railway.app${book.image}`
+        : `https://booksite-backend-production.up.railway.app/uploads/${book.image}`;
       
       div.innerHTML = `
         <img src="${imageUrl}" alt="${book.title}">
