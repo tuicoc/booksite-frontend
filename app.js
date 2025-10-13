@@ -1,7 +1,7 @@
 // ============================
 // FRONTEND SCRIPT - BOOKSITE
 // ============================
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'https://booksite-backend-production.up.railway.app/api';
 let token = localStorage.getItem('jwt') || null;
 let currentUser = token ? parseJwt(token) : null;
 
