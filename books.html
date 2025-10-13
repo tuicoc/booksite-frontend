@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sách - Danh sách</title>
+<style>
+:root{
+  --green:#3f6f4a;
+  --light:#f2f6e9;
+  --accent:#a7c789;
+}
+body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); background:linear-gradient(#f7f9f0,#eef6e6);}
+
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--light);box-shadow:0 2px 0 rgba(0,0,0,0.06);position:sticky;top:0;z-index:10;}
+.brand{font-weight:800;background:var(--green);color:white;padding:8px 14px;border-radius:20px;cursor:pointer;}
+.nav{display:flex;gap:16px;align-items:center;}
+.nav a{padding:10px 14px;border-radius:20px;background:var(--accent);text-decoration:none;color:#123; font-weight:700;}
+.pill{background:var(--green);color:white;border:none;padding:10px 14px;border-radius:20px;cursor:pointer;font-weight:600; font-size: 14px;} 
+.menu-toggle{display:none;background:none;border:0;font-size:22px}
+
+.books-hero{padding:24px 40px;background:linear-gradient(180deg,#fff,#f3f7ef);border-bottom:1px solid rgba(0,0,0,0.03)}
+#books-section{padding:24px 40px}
+.books-list{display:flex;flex-direction:column;gap:18px}
+.book-item{display:flex;gap:16px;align-items:flex-start;background:white;padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.03);cursor:pointer;transition:all 0.3s;}
+.book-item:hover{box-shadow:0 6px 20px rgba(0,0,0,0.1);transform:translateY(-2px);}
+.book-item img{width:96px;height:120px;object-fit:cover;border-radius:10px}
+.book-meta h3{margin:0 0 6px 0}
+.book-actions{margin-top:8px;display:flex;gap:8px}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000;}
+.modal.show{display:flex;}
+.modal-inner{background:white;padding:28px;border-radius:16px;min-width:420px;position:relative;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.modal-inner h3{margin:0 0 24px 0;font-size:24px;color:var(--green)}
+.close{position:absolute;right:12px;top:12px;border:0;background:none;font-size:24px;cursor:pointer;color:#999;transition:color 0.2s;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.close:hover{color:var(--green);background:#f2f6e9;}
+
+.form-group{margin-bottom:20px}
+.form-group label{display:block;margin-bottom:8px;font-weight:600;color:var(--green);font-size:14px}
+.form-group input[type="text"],
+.form-group textarea{width:100%;padding:12px 16px;border:2px solid #e0e7d3;border-radius:8px;font-family:inherit;font-size:14px;transition:border-color 0.2s;box-sizing:border-box}
+.form-group input[type="text"]:focus,
+.form-group textarea:focus{outline:none;border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:100px}
+
+.file-upload-wrapper{position:relative}
+.file-upload-wrapper input[type="file"]{position:absolute;opacity:0;width:0;height:0}
+.file-upload-label{display:block;padding:16px;border:2px dashed var(--accent);border-radius:8px;background:#fafcf5;cursor:pointer;text-align:center;transition:all 0.2s;color:var(--green)}
+.file-upload-label:hover{border-color:var(--green);background:#f2f6e9;border-style:solid;}
+.file-upload-label span{font-size:14px}
+
+.btn-submit{width:100%;margin-top:8px;padding:14px 24px;font-size:16px}
+
+.site-footer{background:linear-gradient(180deg,#f7f9f0,#e8f4d8);padding:48px 20px;text-align:center;margin-top:auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.footer-title{font-size:32px;font-weight:800;color:var(--green);margin:0 0 12px 0}
+.footer-subtitle{font-size:16px;color:var(--green);margin-bottom:24px}
+.social-row{display:flex;gap:18px;justify-content:center;margin-top:16px;}
+.social-pill{display:flex;gap:8px;align-items:center;padding:10px 16px;border-radius:999px;background:linear-gradient(#fff,#f2f6e9);text-decoration:none;color:var(--green);box-shadow:0 6px 18px rgba(0,0,0,0.06);transition:transform 0.2s;}
+.social-pill:hover{transform:translateY(-2px)}
+.social-pill img{width:28px;height:28px}
+
+@media(max-width:700px){
+  .nav{display:none;position:absolute;right:10px;top:64px;background:var(--light);padding:10px;border-radius:8px;flex-direction:column}
+  .menu-toggle{display:block}
+  .nav.show{display:flex}
+  .books-list{padding:0 12px}
+  .modal-inner{min-width:auto;width:90vw;padding:20px}
+}
+</style>
+</head>
+<body>
+<div style="display:flex;flex-direction:column;min-height:100vh">
+<header class="site-header">
+  <div class="brand" onclick="window.location.href='index.html'">Sách hay mỗi ngày</div>
+  <nav class="nav" id="nav">
+    <a href="index.html">Home</a>
+    <a href="books.html" style="background:var(--green);color:white;">Books</a>
+    <a href="review.html">Reviews</a>
+    <a href="#contact" onclick="event.preventDefault(); document.getElementById('contact').scrollIntoView({behavior:'smooth'});">Contact us</a>
+    <button id="btn-login" class="pill">Đăng nhập</button>
+    <button id="btn-logout" class="pill" style="display:none;">Đăng xuất</button>
+  </nav>
+  <button id="menu-toggle" class="menu-toggle" onclick="document.getElementById('nav').classList.toggle('show')">☰</button>
+</header>
+
+<main style="flex:1">
+  <section class="books-hero">
+    <h1>Danh sách sách</h1>
+    <p class="lead">Các cuốn sách được cộng đồng thêm vào.</p>
+    <div class="controls" id="admin-controls"></div>
+  </section>
+
+  <section id="books-section">
+    <div id="books-list" class="books-list"></div>
+    <div id="load-more-wrap"><button id="load-more" class="pill">Load more</button></div>
+  </section>
+
+  <!-- Add Book modal -->
+  <div id="addbook-modal" class="modal">
+    <div class="modal-inner">
+      <button class="close" onclick="document.getElementById('addbook-modal').classList.remove('show')">✖</button>
+      <h3>Thêm sách mới</h3>
+      <form id="addBookForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="bookTitle">Tên sách</label>
+          <input type="text" id="bookTitle" name="title" placeholder="Nhập tên sách..." required>
+        </div>
+        <div class="form-group">
+          <label for="bookDescription">Mô tả</label>
+          <textarea id="bookDescription" name="description" placeholder="Nhập mô tả về sách..." rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="bookImage">Ảnh bìa</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="bookImage" name="image" accept="image/*" required onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'Chọn ảnh bìa sách...'">
+            <label for="bookImage" class="file-upload-label">
+              <span id="file-name">Chọn ảnh bìa sách...</span>
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="pill btn-submit">Thêm sách</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer" id="contact">
+  <h1 class="footer-title">Tham gia cộng đồng đọc sách</h1>
+  <p class="footer-subtitle">Connect with us on:</p>
+  <div class="social-row">
+    <a href="#" class="social-pill"><img src="assets/discord.svg" alt="discord" /></a>
+    <a href="#" class="social-pill"><img src="assets/facebook.png" alt="facebook" /></a>
+    <a href="#" class="social-pill"><img src="assets/zalo.png" alt="zalo" /></a>
+  </div>
+</footer>
+
+<script>
+const API_BASE = 'http://localhost:8080/api';
+let token = null;
+let currentUser = null;
+
+function parseJwt(token) {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch (e) {
+    return null;
+  }
+}
+
+// LƯU SÁCH ĐÃ XEM VÀO DATABASE
+async function addViewedBook(bookId) {
+  if (!token) return; // Chỉ lưu khi đã đăng nhập
+  
+  try {
+    await fetch(API_BASE + '/viewed-books', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ bookId: bookId })
+    });
+  } catch (error) {
+    console.error('Error saving viewed book:', error);
+  }
+}
+
+function initAuth() {
+  token = localStorage.getItem('jwt') || null;
+  currentUser = token ? parseJwt(token) : null;
+}
+
+const btnLogin = document.getElementById('btn-login');
+const btnLogout = document.getElementById('btn-logout');
+
+if (btnLogin) {
+  btnLogin.addEventListener('click', () => {
+    if (!currentUser) {
+      window.location.href = 'auth.html';
+    }
+  });
+}
+
+if (btnLogout) {
+  btnLogout.addEventListener('click', () => {
+    localStorage.removeItem('jwt');
+    token = null;
+    currentUser = null;
+    window.location.reload();
+  });
+}
+
+function applyAfterLogin() {
+  if (!currentUser) {
+    if (btnLogin) btnLogin.style.display = 'inline-block';
+    if (btnLogout) btnLogout.style.display = 'none';
+    return;
+  }
+  
+  if (btnLogin) {
+    btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
+    btnLogin.style.cursor = 'default';
+    btnLogin.style.display = 'inline-block';
+  }
+  
+  if (btnLogout) {
+    btnLogout.style.display = 'inline-block';
+  }
+  
+  const ctrl = document.getElementById('admin-controls');
+  if (ctrl && currentUser.roles && currentUser.roles.includes('ROLE_ADMIN')) {
+    const b = document.createElement('button');
+    b.className = 'pill';
+    b.innerText = '+ Add Book';
+    b.onclick = function() {
+      document.getElementById('addbook-modal').classList.add('show');
+    };
+    ctrl.appendChild(b);
+  }
+}
+
+let page = 0;
+const size = 10;
+
+async function loadBooks() {
+  const list = document.getElementById('books-list');
+  const loadMore = document.getElementById('load-more');
+  
+  const res = await fetch(API_BASE + '/books?page=' + page + '&size=' + size);
+  const data = await res.json();
+  
+  data.forEach((b) => {
+    const div = document.createElement('div');
+    div.className = 'book-item';
+    const imageUrl = b.imagePath.startsWith('/uploads/')
+      ? `http://localhost:8080${b.imagePath}`
+      : `http://localhost:8080/uploads/${b.imagePath}`;
+
+    div.innerHTML = `
+      <img src="${imageUrl}" alt="${b.title}">
+      <div class="book-meta">
+        <h3>${b.title}</h3>
+        <p>${b.description}</p>
+        ${currentUser && currentUser.roles && currentUser.roles.includes('ROLE_ADMIN') ? 
+          `<button class="pill" style="background:#dc3545;font-size:12px;padding:6px 12px;margin-top:8px;" onclick="event.stopPropagation();deleteBook(${b.id})">Xóa</button>` 
+          : ''}
+      </div>
+    `;
+    
+    // Click vào sách -> lưu vào database và chuyển đến trang review
+    div.onclick = async function() {
+      await addViewedBook(b.id);
+      window.location.href = `review.html?bookId=${b.id}&title=${encodeURIComponent(b.title)}`;
+    };
+    
+    list.appendChild(div);
+  });
+  
+  page++;
+  if (data.length < size) loadMore.style.display = 'none';
+}
+
+async function deleteBook(bookId) {
+  if (!confirm('Bạn có chắc muốn xóa sách này? Tất cả bình luận sẽ bị xóa!')) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(API_BASE + '/books/' + bookId, {
+      method: 'DELETE',
+    });
+    
+    if (res.ok) {
+      alert('Đã xóa sách thành công!');
+      location.reload();
+    } else {
+      alert('Không thể xóa sách');
+    }
+  } catch (error) {
+    alert('Lỗi khi xóa sách');
+  }
+}
+
+document.getElementById('addBookForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData();
+  formData.append('title', document.getElementById('bookTitle').value);
+  formData.append('description', document.getElementById('bookDescription').value);
+  formData.append('image', document.getElementById('bookImage').files[0]);
+
+  const res = await fetch(API_BASE + '/books/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (res.ok) {
+    alert('Book uploaded!');
+    document.getElementById('addbook-modal').classList.remove('show');
+    location.reload();
+  } else {
+    alert('Upload failed');
+  }
+});
+
+document.getElementById('load-more').addEventListener('click', loadBooks);
+
+initAuth();
+applyAfterLogin();
+loadBooks();
+</script>
+</div>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hội thoại - Reviews</title>
+<style>
+:root{
+  --green:#3f6f4a;
+  --light:#f2f6e9;
+  --accent:#a7c789;
+}
+body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); background:linear-gradient(#f7f9f0,#eef6e6);}
+
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--light);box-shadow:0 2px 0 rgba(0,0,0,0.06);position:sticky;top:0;z-index:10;}
+.brand{font-weight:800;background:var(--green);color:white;padding:8px 14px;border-radius:20px;cursor:pointer;}
+.nav{display:flex;gap:16px;align-items:center;}
+.nav a{padding:10px 14px;border-radius:20px;background:var(--accent);text-decoration:none;color:#123; font-weight:700;}
+.nav a.active{background:var(--green);color:white;}
+.pill{background:var(--green);color:white;border:none;padding:10px 14px;border-radius:20px;cursor:pointer;font-weight:600; font-size: 14px;} 
+
+.chat-page {
+  display: flex; height: calc(100vh - 80px); background: var(--light);
+  border-radius: 16px; margin: 24px; overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+.chat-list { 
+  width: 320px; background: white; border-right:1px solid #e0e7d3; 
+  overflow-y:auto; display:flex; flex-direction:column;
+}
+.chat-list-header {
+  padding: 21px; background: var(--green); color: white; 
+  font-weight: 700; font-size: 17px; text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.chat-item {
+  display: flex; gap: 14px; padding: 16px; border-bottom: 1px solid #f2f6e9;
+  cursor: pointer; transition: all 0.3s; align-items: center;
+}
+
+.chat-item.active { 
+  background: var(--accent); 
+  border-left: 4px solid var(--green);
+}
+.chat-item img {
+  width: 60px; height: 80px; object-fit: cover; border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+.chat-item-info {
+  flex: 1;
+  min-width: 0;
+}
+.chat-item-info h4 {
+  margin: 0 0 6px 0; font-size: 15px; color: var(--green);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.chat-item-info p {
+  margin: 0; font-size: 12px; color: #888;
+  font-style: italic;
+}
+
+.chat-box { 
+  flex:1; display:flex; flex-direction:column; background:#f8faf3;
+}
+.chat-box-header {
+  padding: 20px 24px; font-weight: 700; font-size: 19px;
+  background: linear-gradient(135deg, var(--green), #2d5236); 
+  color: white; display: flex;
+  align-items: center; gap: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+.chat-messages {
+  flex:1; overflow-y:auto; padding:20px; 
+  display: flex; flex-direction: column; gap: 12px;
+}
+.message {
+  display: flex; gap: 10px; max-width: 70%; animation: fadeIn 0.3s;
+}
+.message.me {
+  align-self: flex-end; flex-direction: row-reverse;
+}
+.message-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #8fb574); 
+  display: flex; align-items: center;
+  justify-content: center; font-weight: 700; color: white;
+  flex-shrink: 0; font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.message.me .message-avatar {
+  background: linear-gradient(135deg, var(--green), #2d5236);
+}
+.message-content {
+  background: white; padding: 12px 16px; border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 1px solid #f0f4eb;
+}
+.message.me .message-content {
+  background: linear-gradient(135deg, var(--green), #35634a); 
+  color: white;
+  border: none;
+}
+.message-name {
+  font-size: 11px; font-weight: 600; margin-bottom: 4px;
+  color: var(--green);
+}
+.message.me .message-name {
+  color: rgba(255,255,255,0.8); text-align: right;
+}
+.message-text {
+  font-size: 14px; line-height: 1.5; word-wrap: break-word;
+}
+.message-time {
+  font-size: 10px; color: #999; margin-top: 4px;
+}
+.message.me .message-time {
+  color: rgba(255,255,255,0.7); text-align: right;
+}
+
+.chat-input {
+  display:flex; padding:16px 20px; gap:12px; background:white;
+  border-top: 1px solid #e0e7d3;
+}
+.chat-input input {
+  flex:1; padding:12px 16px; border-radius:24px; 
+  border:2px solid #e0e7d3; font-family: inherit;
+  font-size: 14px; transition: all 0.2s;
+}
+.chat-input input:focus {
+  outline: none; border-color: var(--accent);
+}
+.chat-input button {
+  padding: 12px 24px; border-radius: 24px;
+}
+
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #999; text-align: center; padding: 40px;
+}
+.empty-state h3 {
+  color: var(--green); margin-bottom: 12px; font-size: 22px;
+}
+.empty-state p {
+  font-size: 15px; max-width: 400px; line-height: 1.6;
+}
+
+.no-books-message {
+  padding: 30px 20px; text-align: center; color: #999;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px;
+}
+.no-books-message h4 {
+  color: var(--green); margin: 0 0 8px 0; font-size: 16px;
+}
+.no-books-message p {
+  margin: 0; font-size: 14px; line-height: 1.6;
+}
+.no-books-message .pill {
+  margin-top: 12px; font-size: 13px; padding: 8px 16px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+@media(max-width:768px){
+  .chat-page { 
+    flex-direction: column; margin: 12px; 
+    height: calc(100vh - 100px); 
+  }
+  .chat-list { 
+    width: 100%; max-height: 250px; 
+    border-right: none;
+    border-bottom: 2px solid var(--accent);
+  }
+  .chat-item {
+    padding: 12px;
+  }
+  .chat-item img {
+    width: 50px;
+    height: 65px;
+  }
+  .chat-item-info h4 {
+    font-size: 14px;
+  }
+  .message { 
+    max-width: 85%; 
+  }
+  .chat-box-header {
+    font-size: 16px;
+    padding: 16px 20px;
+  }
+  .chat-input {
+    padding: 12px 16px;
+  }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand" onclick="window.location.href='index.html'">Sách hay mỗi ngày</div>
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="books.html">Books</a>
+    <a href="review.html" class="active">Reviews</a>
+    <button id="btn-login" class="pill">Đăng nhập</button>
+    <button id="btn-logout" class="pill" style="display:none;">Đăng xuất</button>
+  </nav>
+</header>
+
+<div class="chat-page">
+  <div class="chat-list">
+    <div class="chat-list-header">Sách đã xem</div>
+    <div id="chat-list-items"></div>
+  </div>
+  
+  <div class="chat-box">
+    <div class="chat-box-header" id="chat-box-header">
+      <span>Chọn sách để xem hội thoại</span>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="empty-state">
+        <h3>Chưa có cuộc trò chuyện nào</h3>
+        <p>Chọn một cuốn sách từ danh sách bên trái để bắt đầu</p>
+      </div>
+    </div>
+    <div class="chat-input">
+      <input id="msg-input" placeholder="Nhập tin nhắn..." disabled>
+      <button id="msg-send" class="pill" disabled>Gửi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:8080/api';
+let token = null;
+let currentUser = null;
+let currentBookId = null;
+
+function parseJwt(token) {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch (e) {
+    return null;
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function initAuth() {
+  token = localStorage.getItem('jwt') || null;
+  currentUser = token ? parseJwt(token) : null;
+  
+  const btnLogin = document.getElementById('btn-login');
+  const btnLogout = document.getElementById('btn-logout');
+  
+  if (!currentUser) {
+    if (btnLogin) {
+      btnLogin.style.display = 'inline-block';
+      btnLogin.onclick = () => window.location.href = 'auth.html';
+    }
+    if (btnLogout) btnLogout.style.display = 'none';
+  } else {
+    if (btnLogin) {
+      btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
+      btnLogin.style.cursor = 'default';
+      btnLogin.onclick = null;
+    }
+    if (btnLogout) {
+      btnLogout.style.display = 'inline-block';
+      btnLogout.onclick = () => {
+        localStorage.removeItem('jwt');
+        window.location.reload();
+      };
+    }
+  }
+}
+
+// LOAD SÁCH ĐÃ XEM TỪ DATABASE
+async function loadChatList() {
+  const container = document.getElementById('chat-list-items');
+  
+  if (!token) {
+    container.innerHTML = `
+      <div class="no-books-message">
+        <h4>🔐 Chưa đăng nhập</h4>
+        <p>Đăng nhập để xem lịch sử<br>sách đã xem của bạn</p>
+        <button class="pill" onclick="window.location.href='auth.html'">Đăng nhập ngay</button>
+      </div>
+    `;
+    return;
+  }
+  
+  try {
+    const res = await fetch(API_BASE + '/viewed-books', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+    
+    const viewedBooks = await res.json();
+    
+    if (viewedBooks.length === 0) {
+      container.innerHTML = `
+        <div class="no-books-message">
+          <h4>Chưa có sách nào</h4>
+          <p>Bạn chưa xem sách nào.<br>Hãy khám phá thư viện!</p>
+          <button class="pill" onclick="window.location.href='books.html'">Xem sách ngay</button>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = '';
+    viewedBooks.forEach((book) => {
+      const div = document.createElement('div');
+      div.className = 'chat-item';
+      div.dataset.id = book.id;
+      div.dataset.title = book.title;
+      
+      const imageUrl = book.image.startsWith('/uploads/')
+        ? `http://localhost:8080${book.image}`
+        : `http://localhost:8080/uploads/${book.image}`;
+      
+      div.innerHTML = `
+        <img src="${imageUrl}" alt="${book.title}">
+        <div class="chat-item-info">
+          <h4>${book.title}</h4>
+          <p>Xem bình luận</p>
+        </div>
+      `;
+      div.onclick = () => openChat(book.id, book.title);
+      container.appendChild(div);
+    });
+    
+    // Nếu có bookId trong URL, tự động mở chat đó
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookIdParam = urlParams.get('bookId');
+    const bookTitleParam = urlParams.get('title');
+    
+    if (bookIdParam) {
+      const bookExists = viewedBooks.find(b => b.id == bookIdParam);
+      if (bookExists) {
+        setTimeout(() => {
+          openChat(parseInt(bookIdParam), bookTitleParam || bookExists.title);
+        }, 100);
+      } else if (bookTitleParam) {
+        // Nếu chưa có trong danh sách, vẫn mở chat
+        setTimeout(() => {
+          openChat(parseInt(bookIdParam), bookTitleParam);
+        }, 100);
+      }
+    }
+  } catch (error) {
+    container.innerHTML = `
+      <div class="no-books-message">
+        <h4>Lỗi tải dữ liệu</h4>
+        <p>Không thể tải danh sách sách.<br>Vui lòng thử lại sau.</p>
+        <button class="pill" onclick="location.reload()">Tải lại</button>
+      </div>
+    `;
+  }
+}
+
+async function openChat(bookId, title) {
+  currentBookId = bookId;
+  
+  // Highlight active chat
+  document.querySelectorAll('.chat-item').forEach(item => {
+    item.classList.remove('active');
+    if (item.dataset.id == bookId) {
+      item.classList.add('active');
+    }
+  });
+  
+  // Update URL without reload
+  const newUrl = `${window.location.pathname}?bookId=${bookId}&title=${encodeURIComponent(title)}`;
+  window.history.replaceState({}, '', newUrl);
+  
+  // Update header
+  document.getElementById('chat-box-header').innerHTML = `
+    <span>${title}</span>
+  `;
+  
+  // Load messages
+  const messagesContainer = document.getElementById('chat-messages');
+  messagesContainer.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">Đang tải...</div>';
+  
+  try {
+    const res = await fetch(`${API_BASE}/comments?bookId=${bookId}`);
+    const msgs = await res.json();
+    
+    messagesContainer.innerHTML = '';
+    
+    if (msgs.length === 0) {
+      messagesContainer.innerHTML = `
+        <div class="empty-state">
+          <h3>Chưa có bình luận nào</h3>
+          <p>Hãy là người đầu tiên bình luận về cuốn sách này!</p>
+        </div>
+      `;
+    } else {
+      msgs.forEach(m => {
+        // So sánh USERNAME (không phải displayName)
+        const isMe = currentUser && m.username && (m.username === currentUser.sub);
+        
+        const div = document.createElement('div');
+        div.className = 'message' + (isMe ? ' me' : '');
+        
+        const initials = m.displayName ? m.displayName.substring(0, 2).toUpperCase() : 'AN';
+        
+        div.innerHTML = `
+          <div class="message-avatar">${initials}</div>
+          <div class="message-content">
+            <div class="message-name">${m.displayName || 'Anonymous'}</div>
+            <div class="message-text">${escapeHtml(m.content)}</div>
+            <div class="message-time">${new Date(m.createdAt).toLocaleString('vi-VN')}</div>
+          </div>
+        `;
+        messagesContainer.appendChild(div);
+      });
+    }
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Enable input
+    const input = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('msg-send');
+    
+    if (currentUser) {
+      input.disabled = false;
+      sendBtn.disabled = false;
+      input.placeholder = 'Nhập tin nhắn...';
+    } else {
+      input.disabled = true;
+      sendBtn.disabled = true;
+      input.placeholder = 'Đăng nhập để bình luận...';
+    }
+    
+  } catch (error) {
+    messagesContainer.innerHTML = '<div style="text-align:center;padding:20px;color:red;">Lỗi khi tải bình luận</div>';
+  }
+}
+
+// Send message
+document.getElementById('msg-send').onclick = async () => {
+  const input = document.getElementById('msg-input');
+  const msg = input.value.trim();
+  
+  if (!msg) {
+    alert('Vui lòng nhập nội dung bình luận');
+    return;
+  }
+  
+  if (!currentUser) {
+    alert('Vui lòng đăng nhập để bình luận');
+    window.location.href = 'auth.html';
+    return;
+  }
+  
+  if (!currentBookId) {
+    alert('Vui lòng chọn sách để bình luận');
+    return;
+  }
+  
+  try {
+    const res = await fetch(API_BASE + '/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify({ 
+        bookId: currentBookId, 
+        content: msg 
+      })
+    });
+    
+    if (res.ok) {
+      input.value = '';
+      // Reload messages
+      const title = document.getElementById('chat-box-header').textContent.replace('', '');
+      openChat(currentBookId, title);
+    } else {
+      alert('Không thể gửi bình luận. Vui lòng thử lại.');
+    }
+  } catch (error) {
+    alert('Lỗi kết nối. Vui lòng thử lại.');
+  }
+};
+
+// Enter to send
+document.getElementById('msg-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('msg-send').click();
+  }
+});
+
+// Init
+initAuth();
+loadChatList();
+</script>
+</body>
+</html>

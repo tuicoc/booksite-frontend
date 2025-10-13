@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sách hay mỗi ngày - Home</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div style="display:flex;flex-direction:column;min-height:100vh">
+<header class="site-header">
+  <div class="brand">Sách hay mỗi ngày</div>
+  <nav class="nav" id="nav">
+    <a href="index.html" id="nav-home" style="background: var(--green); color: white;">Home</a>
+    <a href="books.html" id="nav-books">Books</a>
+    <a href="review.html" id="nav-reviews">Reviews</a>
+    <a href="#contact" onclick="event.preventDefault(); document.getElementById('contact').scrollIntoView({behavior:'smooth'});">Contact us</a>
+    <button id="btn-login" class="pill">Đăng nhập</button>
+    <button id="btn-logout" class="pill" style="display:none;">Đăng xuất</button>
+  </nav>
+  <button id="menu-toggle" class="menu-toggle">☰</button>
+</header>
+
+<main style="flex:1">
+  <section class="hero">
+    <img src="assets/img.png" alt="book" class="hero-img">
+    <div class="hero-text">
+      <h1>Khám phá thế giới qua từng trang sách</h1>
+      <p class="lead">Nền tảng chia sẻ trải nghiệm đọc sách, review và thảo luận.</p>
+      <button id="btn-featured" class="cta">Xem sách nổi bật</button>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="contact">
+  <h1 class="footer-title">Tham gia cộng đồng đọc sách</h1>
+  <p class="footer-subtitle">Connect with us on:</p>
+  <div class="social-row">
+    <a href="#" class="social-pill"><img src="assets/discord.svg" alt="discord" /></a>
+    <a href="#" class="social-pill"><img src="assets/facebook.png" alt="facebook" /></a>
+    <a href="#" class="social-pill"><img src="assets/zalo.png" alt="zalo" /></a>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</div>
+</body>
+</html>
