@@ -8,11 +8,19 @@ let currentUser = token ? parseJwt(token) : null;
 function parseJwt(token) {
   try {
     const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
+    const decoded = decodeURIComponent(
+      atob(payload)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(decoded);
   } catch (e) {
+    console.error("JWT decode error:", e);
     return null;
   }
 }
+
 
 // ---------- COMMON UI ----------
 const nav = document.getElementById('nav');
@@ -47,17 +55,32 @@ function applyAfterLogin() {
     return;
   }
   
-  // Đã đăng nhập - hiện tên user và nút đăng xuất
-  if (btnLogin) {
-    btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
-    btnLogin.style.cursor = 'default';
-    btnLogin.style.display = 'inline-block';
-    // Không chuyển trang khi đã đăng nhập
-    btnLogin.onclick = null;
-  }
-  
-  if (btnLogout) {
-    btnLogout.style.display = 'inline-block';
+  // Kiểm tra nếu đang ở chế độ mobile (màn hình nhỏ)
+  if (window.innerWidth <= 1000) {
+    // Chế độ mobile: chỉ hiện nút "Đăng xuất", ẩn tên
+    if (btnLogin) {
+      btnLogin.innerText = 'Đăng xuất';
+      btnLogin.style.cursor = 'pointer';
+      btnLogin.onclick = () => {
+        localStorage.removeItem('jwt');
+        token = null;
+        currentUser = null;
+        window.location.reload();
+      };
+      btnLogin.style.display = 'inline-block';
+    }
+    if (btnLogout) btnLogout.style.display = 'none';
+  } else {
+    // Chế độ desktop: hiện tên + nút đăng xuất riêng
+    if (btnLogin) {
+      btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
+      btnLogin.style.cursor = 'default';
+      btnLogin.onclick = null;
+      btnLogin.style.display = 'inline-block';
+    }
+    if (btnLogout) {
+      btnLogout.style.display = 'inline-block';
+    }
   }
   
   // Admin controls

@@ -18,9 +18,10 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
 .nav a{padding:10px 14px;border-radius:20px;background:var(--accent);text-decoration:none;color:#123; font-weight:700;}
 .nav a.active{background:var(--green);color:white;}
 .pill{background:var(--green);color:white;border:none;padding:10px 14px;border-radius:20px;cursor:pointer;font-weight:600; font-size: 14px;} 
+.menu-toggle{display:none;background:none;border:0;font-size:22px;cursor:pointer;color:var(--green);}
 
 .chat-page {
-  display: flex; height: calc(100vh - 80px); background: var(--light);
+  display: flex; height: calc(100vh - 125px); background: var(--light);
   border-radius: 16px; margin: 24px; overflow: hidden;
   box-shadow: 0 6px 20px rgba(0,0,0,0.05);
 }
@@ -172,15 +173,83 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
 }
 
 
-@media(max-width:768px){
+@media(max-width:1000px){
+  .nav{
+    display:none;
+    position:absolute;
+    right:20px;
+    top:70px;
+    background:white;
+    padding:0;
+    border-radius:12px;
+    flex-direction:column;
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);
+    min-width:180px;
+    gap:0;
+    animation:slideDown 0.3s ease;
+    overflow:hidden;
+  }
+  @keyframes slideDown {
+    from {opacity:0;transform:translateY(-10px);}
+    to {opacity:1;transform:translateY(0);}
+  }
+  .nav a{
+    width:100%;
+    text-align:center;
+    padding:14px 20px;
+    margin:0;
+    border-radius:0;
+    transition:all 0.2s;
+    background:transparent;
+    color:var(--green);
+    font-size:15px;
+    border-bottom:1px solid #f0f4eb;
+  }
+  .nav a:last-of-type{
+    border-bottom:none;
+  }
+  .nav a:hover{
+    background:var(--accent);
+    color:#123;
+  }
+  .nav a.active{
+    background:var(--green);
+    color:white;
+  }
+  .nav .pill{
+    width:100%;
+    margin:0;
+    padding:14px 20px;
+    text-align:center;
+    border-radius:0;
+    font-size:15px;
+    background:transparent; 
+    color:var(--green); 
+  }
+  .nav .pill:hover{          
+    background:var(--accent);
+    color:#123;
+  }
+  .menu-toggle{
+    display:block;
+    padding:8px 12px;
+    border-radius:8px;
+    transition:all 0.2s;
+  }
+  .menu-toggle:hover{
+    background:var(--accent);
+  }
+  .nav.show{display:flex}
+  
   .chat-page { 
     flex-direction: column; margin: 12px; 
-    height: calc(100vh - 100px); 
+    height: calc(100vh - 110px);
   }
   .chat-list { 
-    width: 100%; max-height: 250px; 
+    width: 100%; max-height: 200px; 
     border-right: none;
     border-bottom: 2px solid var(--accent);
+    flex-shrink: 0;
   }
   .chat-item {
     padding: 12px;
@@ -195,12 +264,21 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
   .message { 
     max-width: 85%; 
   }
+  .chat-box {
+    min-height: 0;
+    flex: 1;
+  }
   .chat-box-header {
     font-size: 16px;
     padding: 16px 20px;
   }
+  .chat-messages {
+    flex: 1;
+    min-height: 0;
+  }
   .chat-input {
     padding: 12px 16px;
+    flex-shrink: 0;
   }
 }
 </style>
@@ -208,13 +286,14 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
 <body>
 <header class="site-header">
   <div class="brand" onclick="window.location.href='index.html'">Sách hay mỗi ngày</div>
-  <nav class="nav">
+  <nav class="nav" id="nav">
     <a href="index.html">Home</a>
     <a href="books.html">Books</a>
     <a href="review.html" class="active">Reviews</a>
     <button id="btn-login" class="pill">Đăng nhập</button>
     <button id="btn-logout" class="pill" style="display:none;">Đăng xuất</button>
   </nav>
+  <button id="menu-toggle" class="menu-toggle" onclick="document.getElementById('nav').classList.toggle('show')">☰</button>
 </header>
 
 <div class="chat-page">
@@ -249,11 +328,19 @@ let currentBookId = null;
 function parseJwt(token) {
   try {
     const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
+    const decoded = decodeURIComponent(
+      atob(payload)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(decoded);
   } catch (e) {
+    console.error("JWT decode error:", e);
     return null;
   }
 }
+
 
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -271,21 +358,39 @@ function initAuth() {
   if (!currentUser) {
     if (btnLogin) {
       btnLogin.style.display = 'inline-block';
+      btnLogin.innerText = 'Đăng nhập';
       btnLogin.onclick = () => window.location.href = 'auth.html';
     }
     if (btnLogout) btnLogout.style.display = 'none';
   } else {
-    if (btnLogin) {
-      btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
-      btnLogin.style.cursor = 'default';
-      btnLogin.onclick = null;
-    }
-    if (btnLogout) {
-      btnLogout.style.display = 'inline-block';
-      btnLogout.onclick = () => {
-        localStorage.removeItem('jwt');
-        window.location.reload();
-      };
+    // Kiểm tra nếu đang ở chế độ mobile (màn hình nhỏ)
+    if (window.innerWidth <= 900) {
+      // Chế độ mobile: chỉ hiện nút "Đăng xuất", ẩn tên
+      if (btnLogin) {
+        btnLogin.innerText = 'Đăng xuất';
+        btnLogin.style.cursor = 'pointer';
+        btnLogin.onclick = () => {
+          localStorage.removeItem('jwt');
+          window.location.reload();
+        };
+        btnLogin.style.display = 'inline-block';
+      }
+      if (btnLogout) btnLogout.style.display = 'none';
+    } else {
+      // Chế độ desktop: hiện tên + nút đăng xuất riêng
+      if (btnLogin) {
+        btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
+        btnLogin.style.cursor = 'default';
+        btnLogin.onclick = null;
+        btnLogin.style.display = 'inline-block';
+      }
+      if (btnLogout) {
+        btnLogout.style.display = 'inline-block';
+        btnLogout.onclick = () => {
+          localStorage.removeItem('jwt');
+          window.location.reload();
+        };
+      }
     }
   }
 }
@@ -297,7 +402,7 @@ async function loadChatList() {
   if (!token) {
     container.innerHTML = `
       <div class="no-books-message">
-        <h4>🔐 Chưa đăng nhập</h4>
+        <h4>🔒 Chưa đăng nhập</h4>
         <p>Đăng nhập để xem lịch sử<br>sách đã xem của bạn</p>
         <button class="pill" onclick="window.location.href='auth.html'">Đăng nhập ngay</button>
       </div>

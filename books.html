@@ -17,7 +17,7 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
 .nav{display:flex;gap:16px;align-items:center;}
 .nav a{padding:10px 14px;border-radius:20px;background:var(--accent);text-decoration:none;color:#123; font-weight:700;}
 .pill{background:var(--green);color:white;border:none;padding:10px 14px;border-radius:20px;cursor:pointer;font-weight:600; font-size: 14px;} 
-.menu-toggle{display:none;background:none;border:0;font-size:22px}
+.menu-toggle{display:none;background:none;border:0;font-size:22px;cursor:pointer;color:var(--green);}
 
 .books-hero{padding:24px 40px;background:linear-gradient(180deg,#fff,#f3f7ef);border-bottom:1px solid rgba(0,0,0,0.03)}
 #books-section{padding:24px 40px}
@@ -59,9 +59,68 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
 .social-pill:hover{transform:translateY(-2px)}
 .social-pill img{width:28px;height:28px}
 
-@media(max-width:700px){
-  .nav{display:none;position:absolute;right:10px;top:64px;background:var(--light);padding:10px;border-radius:8px;flex-direction:column}
-  .menu-toggle{display:block}
+@media(max-width:1000px){
+  .nav{
+    display:none;
+    position:absolute;
+    right:20px;
+    top:70px;
+    background:white;
+    padding:0;
+    border-radius:12px;
+    flex-direction:column;
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);
+    min-width:180px;
+    gap:0;
+    animation:slideDown 0.3s ease;
+    overflow:hidden;
+  }
+  @keyframes slideDown {
+    from {opacity:0;transform:translateY(-10px);}
+    to {opacity:1;transform:translateY(0);}
+  }
+  .nav a{
+    width:100%;
+    text-align:center;
+    padding:14px 20px;
+    margin:0;
+    border-radius:0;
+    transition:all 0.2s;
+    background:transparent;
+    color:var(--green);
+    font-size:15px;
+    border-bottom:1px solid #f0f4eb;
+  }
+  .nav a:last-of-type{
+    border-bottom:none;
+  }
+  .nav a:hover{
+    background:var(--accent);
+    color:#123;
+  }
+  .nav .pill{
+    width:100%;
+    margin:0;
+    padding:14px 20px;
+    text-align:center;
+    border-radius:0;
+    font-size:15px;
+    background:transparent; 
+    color:var(--green); 
+  }
+  .nav .pill:hover{          
+    background:var(--accent);
+    color:#123;
+  }
+  .menu-toggle{
+    display:block;
+    padding:8px 12px;
+    border-radius:8px;
+    transition:all 0.2s;
+  }
+  .menu-toggle:hover{
+    background:var(--accent);
+  }
   .nav.show{display:flex}
   .books-list{padding:0 12px}
   .modal-inner{min-width:auto;width:90vw;padding:20px}
@@ -76,7 +135,7 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
     <a href="index.html">Home</a>
     <a href="books.html" style="background:var(--green);color:white;">Books</a>
     <a href="review.html">Reviews</a>
-    <a href="#contact" onclick="event.preventDefault(); document.getElementById('contact').scrollIntoView({behavior:'smooth'});">Contact us</a>
+    <a href="#contact" onclick="event.preventDefault(); document.getElementById('contact').scrollIntoView({behavior:'smooth'}); document.getElementById('nav').classList.remove('show');">Contact us</a>
     <button id="btn-login" class="pill">Đăng nhập</button>
     <button id="btn-logout" class="pill" style="display:none;">Đăng xuất</button>
   </nav>
@@ -128,9 +187,9 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
   <h1 class="footer-title">Tham gia cộng đồng đọc sách</h1>
   <p class="footer-subtitle">Connect with us on:</p>
   <div class="social-row">
-    <a href="#" class="social-pill"><img src="assets/discord.svg" alt="discord" /></a>
-    <a href="#" class="social-pill"><img src="assets/facebook.png" alt="facebook" /></a>
-    <a href="#" class="social-pill"><img src="assets/zalo.png" alt="zalo" /></a>
+    <a href="https://mail.google.com/mail/u/0/#search/sachhaymoingay08%40gmail.com" class="social-pill" target="_blank"><img src="assets/Gmail_icon_(2020).svg.png" alt="gmail" /></a>
+    <a href="https://www.facebook.com/share/16cNWpiE7x/" class="social-pill" target="_blank"><img src="assets/facebook.png" alt="facebook" /></a>
+    <a href="#" class="social-pill" target="_blank"><img src="assets/zalo.png" alt="zalo" /></a>
   </div>
 </footer>
 
@@ -142,8 +201,15 @@ let currentUser = null;
 function parseJwt(token) {
   try {
     const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
+    const decoded = decodeURIComponent(
+      atob(payload)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(decoded);
   } catch (e) {
+    console.error("JWT decode error:", e);
     return null;
   }
 }
@@ -198,14 +264,32 @@ function applyAfterLogin() {
     return;
   }
   
-  if (btnLogin) {
-    btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
-    btnLogin.style.cursor = 'default';
-    btnLogin.style.display = 'inline-block';
-  }
-  
-  if (btnLogout) {
-    btnLogout.style.display = 'inline-block';
+  // Kiểm tra nếu đang ở chế độ mobile (màn hình nhỏ)
+  if (window.innerWidth <= 1000) {
+    // Chế độ mobile: chỉ hiện nút "Đăng xuất", ẩn tên
+    if (btnLogin) {
+      btnLogin.innerText = 'Đăng xuất';
+      btnLogin.style.cursor = 'pointer';
+      btnLogin.onclick = () => {
+        localStorage.removeItem('jwt');
+        token = null;
+        currentUser = null;
+        window.location.reload();
+      };
+      btnLogin.style.display = 'inline-block';
+    }
+    if (btnLogout) btnLogout.style.display = 'none';
+  } else {
+    // Chế độ desktop: hiện tên + nút đăng xuất riêng
+    if (btnLogin) {
+      btnLogin.innerText = currentUser.displayName || currentUser.sub || 'User';
+      btnLogin.style.cursor = 'default';
+      btnLogin.onclick = null;
+      btnLogin.style.display = 'inline-block';
+    }
+    if (btnLogout) {
+      btnLogout.style.display = 'inline-block';
+    }
   }
   
   const ctrl = document.getElementById('admin-controls');
@@ -304,6 +388,11 @@ document.getElementById('addBookForm').addEventListener('submit', async (e) => {
 });
 
 document.getElementById('load-more').addEventListener('click', loadBooks);
+
+// Xử lý resize window
+window.addEventListener('resize', () => {
+  applyAfterLogin();
+});
 
 initAuth();
 applyAfterLogin();

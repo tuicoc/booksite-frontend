@@ -59,14 +59,76 @@ body{font-family: 'Segoe UI', Roboto, Arial; margin:0; color:var(--green); backg
 .footer-title{font-size:32px;font-weight:800;color:var(--green);margin:0 0 12px 0}
 .footer-subtitle{font-size:16px;color:var(--green);margin-bottom:24px}
 
-@media(max-width:700px){
-  .hero{flex-direction:column;padding:12px}
+@media(max-width:1000px){
+  .hero{flex-direction:column;padding:12px;text-align:center;}
   .hero-img{width:100%}
-  .nav{display:none;position:absolute;right:10px;top:64px;background:var(--light);padding:10px;border-radius:8px;flex-direction:column}
-  .menu-toggle{display:block}
+  .hero-text{display:flex;flex-direction:column;align-items:center;}
+  .nav{
+    display:none;
+    position:absolute;
+    right:20px;
+    top:70px;
+    background:white;
+    padding:0;
+    border-radius:12px;
+    flex-direction:column;
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);
+    min-width:180px;
+    gap:0;
+    animation:slideDown 0.3s ease;
+    overflow:hidden;
+  }
+  @keyframes slideDown {
+    from {opacity:0;transform:translateY(-10px);}
+    to {opacity:1;transform:translateY(0);}
+  }
+  .nav a{
+    width:100%;
+    text-align:center;
+    padding:14px 20px;
+    margin:0;
+    border-radius:0;
+    transition:all 0.2s;
+    background:transparent;
+    color:var(--green);
+    font-size:15px;
+    border-bottom:1px solid #f0f4eb;
+  }
+  .nav a:last-of-type{
+    border-bottom:none;
+  }
+  .nav a:hover{
+    background:var(--accent);
+    color:#123;
+  }
+  .nav .pill{
+    width:100%;
+    margin:0;
+    padding:14px 20px;
+    text-align:center;
+    border-radius:0;
+    font-size:15px;
+    background:transparent; 
+    color:var(--green); 
+  }
+  .nav .pill:hover{          
+    background:var(--accent);
+    color:#123;
+  }
+  .menu-toggle{
+    display:block;
+    cursor:pointer;
+    color:var(--green);
+    padding:8px 12px;
+    border-radius:8px;
+    transition:all 0.2s;
+  }
+  .menu-toggle:hover{
+    background:var(--accent);
+  }
   .nav.show{display:flex}
   .books-list{padding:0 12px}
-  .social-row{flex-direction:column;align-items:center}
+  .social-row{flex-direction:row;align-items:center;justify-content:center;flex-wrap:wrap;}
   .footer-title{font-size:24px}
   .modal-addbook{min-width:auto;width:90vw;padding:20px}
 }
